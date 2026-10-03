@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  dlq-triage:
+    build: .
+    depends_on:
+      - kafka
+    ports:
+      - "9090:9090"
+    environment:
+      KAFKA_BROKERS: "kafka:29092"
+      KAFKA_DLQ_TOPIC: "dead_letter_queue"
+      KAFKA_MAIN_TOPIC: "orders_main_stream"
+      KAFKA_DEAD_END_TOPIC: "dead_end_unrecoverable"
+      KAFKA_CONSUMER_GROUP: "dlq-auto-triage-workers"
+      WORKER_POOL_SIZE: "10"
+      CHANNEL_BUFFER_SIZE: "100"
+      MAX_RETRY_COUNT: "3"
+      JEV_API_KEY: "${JEV_API_KEY:-sample_dev_key}"
+      JEV_BASE_URL: "${JEV_BASE_URL:-https://api.jev.ai/v1/decide/choice}"
+      ALERT_WEBHOOK_URL: "${ALERT_WEBHOOK_URL:-https://events.pagerduty.com/v2/enqueue}"
+      METRICS_PORT: "9090"
+      LOG_LEVEL: "info"
+      APP_ENV: "production"

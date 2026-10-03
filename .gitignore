@@ -1,0 +1,19 @@
+# Secrets
+.env
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+/bin/
+*.exe
+
+.qodo
+.qodo/*
+*.sh
+.md
+*.md
