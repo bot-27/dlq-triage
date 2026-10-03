@@ -20,6 +20,7 @@ A production-grade, highly concurrent Go microservice that consumes failed messa
   - [Option 1: Complete Setup with Docker Compose (Recommended)](#option-1-complete-setup-with-docker-compose-recommended)
   - [Option 2: Native Local Setup](#option-2-native-local-setup)
 - [Configuration Reference (.env)](#configuration-reference-env)
+- [Enterprise Security & Data Privacy (Zero Data Leakage)](#enterprise-security--data-privacy-zero-data-leakage)
 - [Simulating & Testing DLQ Events](#simulating--testing-dlq-events)
   - [1. Transient Network Error (Auto-Requeued)](#1-transient-network-error-auto-requeued)
   - [2. Malformed JSON (Quarantined to Dead-End)](#2-malformed-json-quarantined-to-dead-end)
