@@ -41,6 +41,7 @@ services:
       MAX_RETRY_COUNT: "3"
       JEV_API_KEY: "${JEV_API_KEY:-sample_dev_key}"
       JEV_BASE_URL: "${JEV_BASE_URL:-https://api.jev.ai/v1/decide/choice}"
+      METADATA_ONLY_TRIAGE: "${METADATA_ONLY_TRIAGE:-true}"
       ALERT_WEBHOOK_URL: "${ALERT_WEBHOOK_URL:-https://events.pagerduty.com/v2/enqueue}"
       METRICS_PORT: "9090"
       LOG_LEVEL: "info"

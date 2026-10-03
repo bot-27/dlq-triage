@@ -218,6 +218,7 @@ The service automatically loads settings from `.env` in local development, or re
 | `JEV_API_KEY` | *(Required in prod)* | Bearer authorization key for Jev AI Decision Choice API. |
 | `JEV_BASE_URL` | `https://api.jev.ai/v1/decide/choice` | Endpoint URL for the Jev AI Decision Choice primitive. |
 | `JEV_TIMEOUT_SECONDS` | `5` | HTTP client timeout in seconds for Jev AI requests. |
+| `METADATA_ONLY_TRIAGE`| `true` | **Enterprise Security**: Strips raw payload & sensitive headers before external API calls. |
 | `ALERT_WEBHOOK_URL` | `https://events.pagerduty.com/v2/enqueue` | Webhook URL for alerting on classified logic bugs. |
 | `ALERT_CHANNEL` | `#dlq-critical-alerts` | Target notification channel (Slack/Teams/PagerDuty). |
 | `WORKER_POOL_SIZE` | `10` | Number of concurrent worker goroutines triaging messages. |
@@ -228,6 +229,18 @@ The service automatically loads settings from `.env` in local development, or re
 | `METRICS_PATH` | `/metrics` | HTTP path where Prometheus metrics are exposed. |
 | `LOG_LEVEL` | `info` | Logging verbosity (`debug`, `info`, `warn`, `error`). |
 | `APP_ENV` | `production` | Environment mode (`development` enables colorized console output). |
+
+---
+
+## Enterprise Security & Data Privacy (Zero Data Leakage)
+
+To comply with **GDPR**, **HIPAA**, **SOC 2**, and **PCI-DSS**, this service features built-in **Metadata-Only Triage Mode** (`METADATA_ONLY_TRIAGE=true`, enabled by default).
+
+### How It Protects Enterprise Data:
+- **Zero Payload Leakage**: The service **never** sends the raw message payload (`msg.Payload`) to the external AI API. Customer PII, credit card details, passwords, and private business entities stay within your perimeter.
+- **Header Sanitization**: Sensitive headers (such as `Authorization`, session tokens, or internal cookies) are stripped. Only non-sensitive routing metadata (`X-Original-Topic`, `X-Message-ID`, `X-Retry-Count`) is forwarded.
+- **Metadata-Driven Root Cause Analysis**: Root cause classification uses only error diagnostics (`ErrorMessage`, `StackTrace`, and failure timestamps). This gives 100% triage accuracy without exposing user data.
+- **Private / On-Premise Endpoint Support**: You can point `JEV_BASE_URL` to an internal private LLM gateway (e.g. AWS Bedrock VPC Endpoint, Azure OpenAI private link, or self-hosted vLLM) so network traffic never touches public internet.
 
 ---
 

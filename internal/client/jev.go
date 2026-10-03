@@ -75,9 +75,25 @@ func (c *JevClient) Classify(ctx context.Context, msg model.DLQMessage) (*model.
 		c.metrics.JevAPILatencyMs.Observe(float64(duration))
 	}()
 
-	payloadStr := string(msg.Payload)
-	if len(payloadStr) > 4096 {
-		payloadStr = payloadStr[:4096] + "... [TRUNCATED]"
+	var payloadSample string
+	var forwardedHeaders map[string]string
+
+	if c.cfg.MetadataOnly {
+		payloadSample = "[OMITTED_METADATA_ONLY_MODE]"
+		// In metadata-only mode, only retain structural, non-sensitive routing headers
+		forwardedHeaders = make(map[string]string)
+		for _, k := range []string{"X-Original-Topic", "X-Message-ID", "X-Retry-Count"} {
+			if v, ok := msg.Headers[k]; ok {
+				forwardedHeaders[k] = v
+			}
+		}
+	} else {
+		payloadStr := string(msg.Payload)
+		if len(payloadStr) > 4096 {
+			payloadStr = payloadStr[:4096] + "... [TRUNCATED]"
+		}
+		payloadSample = payloadStr
+		forwardedHeaders = msg.Headers
 	}
 
 	reqBody := ChoiceRequest{
@@ -94,8 +110,8 @@ func (c *JevClient) Classify(ctx context.Context, msg model.DLQMessage) (*model.
 	reqBody.Context.OriginalTopic = msg.OriginalTopic
 	reqBody.Context.ErrorMessage = msg.ErrorMessage
 	reqBody.Context.StackTrace = msg.StackTrace
-	reqBody.Context.PayloadSample = payloadStr
-	reqBody.Context.Headers = msg.Headers
+	reqBody.Context.PayloadSample = payloadSample
+	reqBody.Context.Headers = forwardedHeaders
 
 	jsonPayload, err := json.Marshal(reqBody)
 	if err != nil {

@@ -29,10 +29,11 @@ type KafkaConfig struct {
 }
 
 type JevConfig struct {
-	APIKey     string
-	BaseURL    string
-	Timeout    time.Duration
-	MaxRetries int
+	APIKey       string
+	BaseURL      string
+	Timeout      time.Duration
+	MaxRetries   int
+	MetadataOnly bool // When true, payloads and sensitive headers are stripped before external API calls
 }
 
 type AlertConfig struct {
@@ -103,10 +104,11 @@ func LoadConfig() (*Config, error) {
 			ConsumerGroup: getEnv("KAFKA_CONSUMER_GROUP", "dlq-auto-triage-workers"),
 		},
 		Jev: JevConfig{
-			APIKey:     getEnv("JEV_API_KEY", "jev_live_sample_key"),
-			BaseURL:    getEnv("JEV_BASE_URL", "https://api.jev.ai/v1/decide/choice"),
-			Timeout:    time.Duration(jevTimeoutSec) * time.Second,
-			MaxRetries: 2,
+			APIKey:       getEnv("JEV_API_KEY", "jev_live_sample_key"),
+			BaseURL:      getEnv("JEV_BASE_URL", "https://api.jev.ai/v1/decide/choice"),
+			Timeout:      time.Duration(jevTimeoutSec) * time.Second,
+			MaxRetries:   2,
+			MetadataOnly: getEnv("METADATA_ONLY_TRIAGE", "true") == "true",
 		},
 		Alert: AlertConfig{
 			WebhookURL: getEnv("ALERT_WEBHOOK_URL", "https://events.pagerduty.com/v2/enqueue"),
